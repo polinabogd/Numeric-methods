@@ -1,0 +1,93 @@
+import copy
+from sympy import *
+
+
+x1, x2 = symbols('x1 x2')
+F1 = (((x1**2-x2**2)**2)/4)-(x1**2)*(x2**2)+0.5-x1
+F2 = x1*x2*(x1**2-x2**2)+0.5-x2
+
+
+def f1(args):
+    x1, x2 = args
+    return ((x1**2-x2**2)**2/4)-x1**2*x2**2+0.5-x1
+
+
+def f2(args):
+    x1, x2 = args
+    return x1*x2*(x1**2-x2**2)+0.5-x2
+
+
+def newton():
+    e = 0.00001
+    n = 2
+    x = [0]*n
+    x_old = [0]*n
+    E = [[0 for i in range(n)] for k in range(n)]
+    for k in range(0, n):
+        for j in range(0, n):
+            if k == j:
+                E[k][j] = 1
+            else:
+                E[k][j] = 0
+    J = [[0 for i in range(n)] for j in range(n)]
+    inverse = []
+
+    condition = False
+    while not condition:
+        vector = [f1(x), f2(x)]
+        J[0][0] = eval(str(diff(F1, x1)), {"x1": x_old[0], "x2": x_old[1]})
+        J[0][1] = eval(str(diff(F1, x2)), {"x1": x_old[0], "x2": x_old[1]})
+        J[1][0] = eval(str(diff(F2, x1)), {"x1": x_old[0], "x2": x_old[1]})
+        J[1][1] = eval(str(diff(F2, x2)), {"x1": x_old[0], "x2": x_old[1]})
+
+        for b in range(n-1):
+            J_copy = copy.deepcopy(J)
+
+            for k in range(n):
+                maximal_el = J_copy[k][k]
+                max_row = k
+                for l in range(k + 1, n):
+                    if abs(maximal_el) < abs(J_copy[l][k]):
+                        maximal_el = abs(J_copy[l][k])
+                        max_row = k
+
+                for d in range(k, n):
+                    temp = J_copy[max_row][k]
+                    J_copy[max_row][d] = J_copy[k][d]
+                    J_copy[k][d] = temp
+
+                for i in range(k + 1, n):
+                    multi_var = -J_copy[i][k] / J_copy[k][k]
+                    for j in range(k, n):
+                        if k == j:
+                            J_copy[i][j] = 0
+                        else:
+                            J_copy[i][j] += multi_var * J_copy[k][j]
+
+                x = copy.deepcopy(J_copy)
+        for i in range(n):
+            inverse.append(x[i])
+
+        for i in range(n):
+            s = 0
+            for j in range(n):
+                s += inverse[i][j] * vector[j]
+            x[i] = (x_old[i] - s)
+
+        for i in range(n):
+            if abs((x[i] - x_old[i]) / x[i]) * 100 < e:
+                if i == n - 1:
+                    condition = True
+            else:
+                break
+
+        for i in range(n):
+            x_old[i] = x[i]
+    return x_old
+
+
+if __name__ == '__main__':
+    result = (newton())
+    print("Result ", result)
+    print("Equation 1 check", (((result[0] ** 2 - result[1] ** 2) ** 2 / 4) - result[0] ** 2 * result[1] ** 2 + 0.5 - result[0]))
+    print("Equation 2 check", (result[0] * result[1] * (result[0] ** 2 - result[1] ** 2) + 0.5 - result[1]))
