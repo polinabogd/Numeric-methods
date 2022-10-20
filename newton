@@ -1,0 +1,30 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def f(x):
+    return (x**3) + (x**2) - 3
+
+
+def fd(x):
+    return 3*(x**2) + 2*x
+
+
+def newton(x, e):
+    x0 = x
+    while True:
+        x1 = x0 - f(x0)/fd(x0)
+        if abs(f(x1)) < e:
+            break
+        print(x1, f(x1))
+        x0 = x1
+    return x0
+
+
+if __name__ == "__main__":
+    eps = 0.000000001
+    x_default = 2
+    res = newton(x_default, eps)
+    print()
+    print(F"The result of Newton method is {res}")
+    print(f(res))
